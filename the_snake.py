@@ -59,15 +59,19 @@ class GameObject:
 class Apple(GameObject):
     """Класс яблока."""
 
-    def __init__(self, body_color=APPLE_COLOR):
+    def __init__(self, occupied, body_color=APPLE_COLOR):
         super().__init__(body_color)
-        self.randomize_position()
+        self.randomize_position(occupied)
 
-    def randomize_position(self):
+    def randomize_position(self, occupied):
         """Метод для случайного размещения яблока на игровом поле."""
-        self.position = (randint(0, GRID_WIDTH - 1) * GRID_SIZE,
-                         randint(0, GRID_HEIGHT - 1) * GRID_SIZE)
-пше
+        while True:
+            pos = (randint(0, GRID_WIDTH - 1) * GRID_SIZE,
+                   randint(0, GRID_HEIGHT - 1) * GRID_SIZE)
+            if pos not in occupied:
+                self.position = pos
+                return
+
     def draw(self):
         """Метод отрисовки яблока на игровом поле."""
         rect = pygame.Rect(self.position, (GRID_SIZE, GRID_SIZE))
@@ -78,14 +82,18 @@ class Apple(GameObject):
 class Stone(GameObject):
     """Класс камня."""
 
-    def __init__(self, body_color=STONE_COLOR):
+    def __init__(self, occupied, body_color=STONE_COLOR):
         super().__init__(body_color)
-        self.randomize_position()
+        self.randomize_position(occupied)
 
-    def randomize_position(self):
+    def randomize_position(self, occupied):
         """Метод для случайного размещения камня на игровом поле."""
-        self.position = (randint(0, GRID_WIDTH - 1) * GRID_SIZE,
-                         randint(0, GRID_HEIGHT - 1) * GRID_SIZE)
+        while True:
+            pos = (randint(0, GRID_WIDTH - 1) * GRID_SIZE,
+                   randint(0, GRID_HEIGHT - 1) * GRID_SIZE)
+            if pos not in occupied:
+                self.position = pos
+                return
 
     def draw(self):
         """Метод отрисовки камня на игровом поле."""
@@ -147,8 +155,8 @@ class Snake(GameObject):
 
 def main():
     """Главная функция игры."""
-    apple = Apple()
     snake = Snake()
+    apple = Apple(snake.positions)
     stones = []
     score = 0
     while True:
@@ -158,20 +166,23 @@ def main():
         snake.move()
         if snake.get_head_position() == apple.position:
             snake.length += 1
-            apple.randomize_position()
+            apple.randomize_position((snake.positions + [
+                s.position for s in stones]))
             score += 1
             if score % 5 == 0:
-                stones.append(Stone())
+                stones.append(Stone(snake.positions + [apple.position] + [
+                    s.position for s in stones]))
         if snake.get_head_position() in snake.positions[1:]:
             score = 0
             snake.reset()
-            screen.fill(BOARD_BACKGROUND_COLOR)
+            apple = Apple(snake.positions)
+            stones.clear()
         for stone in stones:
             if snake.get_head_position() == stone.position:
                 score = 0
-                apple = Apple()
-                stones.clear()
                 snake.reset()
+                apple = Apple(snake.positions)
+                stones.clear()
         screen.fill(BOARD_BACKGROUND_COLOR)
         snake.draw()
         apple.draw()
