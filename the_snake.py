@@ -59,11 +59,13 @@ class GameObject:
 class Apple(GameObject):
     """Класс яблока."""
 
-    def __init__(self, occupied, body_color=APPLE_COLOR):
+    def __init__(self, occupied=None, body_color=APPLE_COLOR):
         super().__init__(body_color)
+        if occupied is None:
+            occupied = []
         self.randomize_position(occupied)
 
-    def randomize_position(self, occupied):
+    def randomize_position(self, occupied=None):
         """Метод для случайного размещения яблока на игровом поле."""
         while True:
             pos = (randint(0, GRID_WIDTH - 1) * GRID_SIZE,
@@ -82,11 +84,13 @@ class Apple(GameObject):
 class Stone(GameObject):
     """Класс камня."""
 
-    def __init__(self, occupied, body_color=STONE_COLOR):
+    def __init__(self, occupied=None, body_color=STONE_COLOR):
         super().__init__(body_color)
+        if occupied is None:
+            occupied = []
         self.randomize_position(occupied)
 
-    def randomize_position(self, occupied):
+    def randomize_position(self, occupied=None):
         """Метод для случайного размещения камня на игровом поле."""
         while True:
             pos = (randint(0, GRID_WIDTH - 1) * GRID_SIZE,
