@@ -28,6 +28,9 @@ APPLE_COLOR = (255, 0, 0)
 # Цвет змейки
 SNAKE_COLOR = (0, 255, 0)
 
+# Цвет камня
+STONE_COLOR = (128, 128, 128)
+
 # Скорость движения змейки:
 SPEED = 10
 
@@ -64,9 +67,28 @@ class Apple(GameObject):
         """Метод для случайного размещения яблока на игровом поле."""
         self.position = (randint(0, GRID_WIDTH - 1) * GRID_SIZE,
                          randint(0, GRID_HEIGHT - 1) * GRID_SIZE)
-
+пше
     def draw(self):
         """Метод отрисовки яблока на игровом поле."""
+        rect = pygame.Rect(self.position, (GRID_SIZE, GRID_SIZE))
+        pygame.draw.rect(screen, self.body_color, rect)
+        pygame.draw.rect(screen, BORDER_COLOR, rect, 1)
+
+
+class Stone(GameObject):
+    """Класс камня."""
+
+    def __init__(self, body_color=STONE_COLOR):
+        super().__init__(body_color)
+        self.randomize_position()
+
+    def randomize_position(self):
+        """Метод для случайного размещения камня на игровом поле."""
+        self.position = (randint(0, GRID_WIDTH - 1) * GRID_SIZE,
+                         randint(0, GRID_HEIGHT - 1) * GRID_SIZE)
+
+    def draw(self):
+        """Метод отрисовки камня на игровом поле."""
         rect = pygame.Rect(self.position, (GRID_SIZE, GRID_SIZE))
         pygame.draw.rect(screen, self.body_color, rect)
         pygame.draw.rect(screen, BORDER_COLOR, rect, 1)
@@ -127,9 +149,10 @@ def main():
     """Главная функция игры."""
     apple = Apple()
     snake = Snake()
+    stones = []
     score = 0
     while True:
-        clock.tick(SPEED + score)
+        clock.tick(SPEED + score // 5)
         handle_keys(snake)
         snake.update_direction()
         snake.move()
@@ -137,13 +160,23 @@ def main():
             snake.length += 1
             apple.randomize_position()
             score += 1
+            if score % 5 == 0:
+                stones.append(Stone())
         if snake.get_head_position() in snake.positions[1:]:
             score = 0
             snake.reset()
             screen.fill(BOARD_BACKGROUND_COLOR)
+        for stone in stones:
+            if snake.get_head_position() == stone.position:
+                score = 0
+                apple = Apple()
+                stones.clear()
+                snake.reset()
         screen.fill(BOARD_BACKGROUND_COLOR)
         snake.draw()
         apple.draw()
+        for stone in stones:
+            stone.draw()
         pygame.display.update()
 
 
