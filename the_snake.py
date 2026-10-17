@@ -124,7 +124,7 @@ class Snake(GameObject):
     def draw(self) -> None:
         """Метод отрисовки змейки на игровом поле."""
         for position in self.positions:
-            self.draw_cell(self.position)
+            self.draw_cell(position)
         if self.last:
             last_rect = pygame.Rect(self.last, (GRID_SIZE, GRID_SIZE))
             pygame.draw.rect(screen, BOARD_BACKGROUND_COLOR, last_rect)
