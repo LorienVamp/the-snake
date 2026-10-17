@@ -47,114 +47,107 @@ clock = pygame.time.Clock()
 class GameObject:
     """Родительский класс для объектов игры."""
 
-    def __init__(self, body_color=(255, 255, 255)):
+    def __init__(self, body_color: tuple[int, int, int] = (
+            255, 255, 255)) -> None:
         self.position = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)
         self.body_color = body_color
 
-    def draw(self):
+    def draw(self) -> None:
         """Метод отрисовки объекта на игровом поле."""
-        pass
+        raise NotImplementedError
+
+    def draw_cell(self, position: tuple[int, int]) -> None:
+        """Метод отрисовки ячейки игровых объектов"""
+        rect = pygame.Rect(position, (GRID_SIZE, GRID_SIZE))
+        pygame.draw.rect(screen, self.body_color, rect)
+        pygame.draw.rect(screen, BORDER_COLOR, rect, 1)
+
+    def randomize_position(self,
+                           occupied_positions: list[tuple[int, int]]) -> None:
+        """Метод для случайного размещения объекта на игровом поле."""
+        while True:
+            new_position = (randint(0, GRID_WIDTH - 1) * GRID_SIZE,
+                            randint(0, GRID_HEIGHT - 1) * GRID_SIZE)
+            if new_position not in occupied_positions:
+                self.position = new_position
+                return
 
 
 class Apple(GameObject):
     """Класс яблока."""
 
-    def __init__(self, occupied=None, body_color=APPLE_COLOR):
+    def __init__(self, occupied_positions: list[
+            tuple[int, int]] | None = None, body_color: tuple[
+                int, int, int] = APPLE_COLOR) -> None:
         super().__init__(body_color)
-        if occupied is None:
-            occupied = []
-        self.randomize_position(occupied)
+        if occupied_positions is None:
+            occupied_positions = []
+        self.randomize_position(occupied_positions)
 
-    def randomize_position(self, occupied=None):
-        """Метод для случайного размещения яблока на игровом поле."""
-        while True:
-            pos = (randint(0, GRID_WIDTH - 1) * GRID_SIZE,
-                   randint(0, GRID_HEIGHT - 1) * GRID_SIZE)
-            if pos not in occupied:
-                self.position = pos
-                return
-
-    def draw(self):
+    def draw(self) -> None:
         """Метод отрисовки яблока на игровом поле."""
-        rect = pygame.Rect(self.position, (GRID_SIZE, GRID_SIZE))
-        pygame.draw.rect(screen, self.body_color, rect)
-        pygame.draw.rect(screen, BORDER_COLOR, rect, 1)
+        self.draw_cell(self.position)
 
 
 class Stone(GameObject):
     """Класс камня."""
 
-    def __init__(self, occupied=None, body_color=STONE_COLOR):
+    def __init__(self, occupied_positions: list[tuple[int, int]] | None = None,
+                 body_color: tuple[int, int, int] = STONE_COLOR) -> None:
         super().__init__(body_color)
-        if occupied is None:
-            occupied = []
-        self.randomize_position(occupied)
+        if occupied_positions is None:
+            occupied_positions = []
+        self.randomize_position(occupied_positions)
 
-    def randomize_position(self, occupied=None):
-        """Метод для случайного размещения камня на игровом поле."""
-        while True:
-            pos = (randint(0, GRID_WIDTH - 1) * GRID_SIZE,
-                   randint(0, GRID_HEIGHT - 1) * GRID_SIZE)
-            if pos not in occupied:
-                self.position = pos
-                return
-
-    def draw(self):
+    def draw(self) -> None:
         """Метод отрисовки камня на игровом поле."""
-        rect = pygame.Rect(self.position, (GRID_SIZE, GRID_SIZE))
-        pygame.draw.rect(screen, self.body_color, rect)
-        pygame.draw.rect(screen, BORDER_COLOR, rect, 1)
+        self.draw_cell(self.position)
 
 
 class Snake(GameObject):
     """Класс змейки."""
 
-    def __init__(self, body_color=SNAKE_COLOR):
+    def __init__(self, body_color: tuple[int, int, int] = SNAKE_COLOR) -> None:
         super().__init__(body_color)
-        self.length = 1
-        self.positions = [(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)]
-        self.direction = RIGHT
-        self.next_direction = None
+        self.reset()
         self.body_color = SNAKE_COLOR
-        self.last = None
+        self.last: tuple[int, int] | None = None
 
-    def draw(self):
-        """Метод отрисовки змейки на игровом поле."""
-        for position in self.positions:
-            rect = pygame.Rect(position, (GRID_SIZE, GRID_SIZE))
-            pygame.draw.rect(screen, self.body_color, rect)
-            pygame.draw.rect(screen, BORDER_COLOR, rect, 1)
-        if self.last:
-            last_rect = pygame.Rect(self.last, (GRID_SIZE, GRID_SIZE))
-            pygame.draw.rect(screen, BOARD_BACKGROUND_COLOR, last_rect)
-
-    def get_head_position(self):
-        """Метод получения позиции головы змейки."""
-        return self.positions[0]
-
-    def move(self):
-        """Метод движения змейки."""
-        cur = self.get_head_position()
-        x, y = self.direction
-        new = ((cur[0] + (x * GRID_SIZE)) % SCREEN_WIDTH,
-               (cur[1] + (y * GRID_SIZE)) % SCREEN_HEIGHT)
-        self.positions.insert(0, new)
-        if len(self.positions) > self.length:
-            self.last = self.positions.pop()
-
-    def update_direction(self):
-        """Метод обновления направления после нажатия на кнопку."""
-        if self.next_direction:
-            self.direction = self.next_direction
-            self.next_direction = None
-
-    def reset(self):
+    def reset(self) -> None:
         """Метод сброса змейки."""
         self.length = 1
         self.positions = [(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)]
         self.direction = RIGHT
         self.next_direction = None
         self.last = None
+
+    def draw(self) -> None:
+        """Метод отрисовки змейки на игровом поле."""
+        for position in self.positions:
+            self.draw_cell(self.position)
+        if self.last:
+            last_rect = pygame.Rect(self.last, (GRID_SIZE, GRID_SIZE))
+            pygame.draw.rect(screen, BOARD_BACKGROUND_COLOR, last_rect)
+
+    def get_head_position(self) -> tuple[int, int]:
+        """Метод получения позиции головы змейки."""
+        return self.positions[0]
+
+    def move(self) -> None:
+        """Метод движения змейки."""
+        current_head = self.get_head_position()
+        x, y = self.direction
+        new = ((current_head[0] + (x * GRID_SIZE)) % SCREEN_WIDTH,
+               (current_head[1] + (y * GRID_SIZE)) % SCREEN_HEIGHT)
+        self.positions.insert(0, new)
+        if len(self.positions) > self.length:
+            self.last = self.positions.pop()
+
+    def update_direction(self) -> None:
+        """Метод обновления направления после нажатия на кнопку."""
+        if self.next_direction:
+            self.direction = self.next_direction
+            self.next_direction = None
 
 
 def main():
@@ -195,7 +188,7 @@ def main():
         pygame.display.update()
 
 
-def handle_keys(game_object):
+def handle_keys(game_object) -> None:
     """Функция обработки действий пользователя."""
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
