@@ -11,20 +11,30 @@
 ## Как развернуть локально
 
 1. Клонировать репозиторий:
+```bash
 git clone git@github.com:LorienVamp/the-snake.git
+```
 
 2. Перейти в папку проекта:
+```bash
 cd the-snake
+```
 
 3. Создать и активировать виртуальное окружение:
+```bash
 python -m venv venv
 source venv/Scripts/activate   # Windows (Git Bash)
+```
 
 4. Установить зависимости:
+```bash
 pip install -r requirements.txt
+```
 
 5. Запустить игру:
+```bash
 python the_snake.py
+```
 
 ## Управление
 Стрелки — направление движения змейки.
